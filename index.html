@@ -11,13 +11,15 @@
             --color-gold: #ffb100;
             --panel-bg: rgba(12, 12, 12, 0.98);
             --border-gold: #3e3324;
+            --disabled-bg: #2a2a2a;
+            --disabled-text: #666;
         }
 
         body {
             background: #050505 url('https://worldofwarcraft.blizzard.com/static/components/Backdrop/Backdrop-dark.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #f0ebe0;
-            font-family: "Segoe UI", sans-serif;
+            font-family: "Segoe UI", Tahoma, sans-serif;
             margin: 0; padding: 20px;
         }
 
@@ -79,8 +81,29 @@
             font-weight: bold;
             text-transform: uppercase;
             margin-top: 18px;
+            border: 1px solid var(--color-gold);
+            transition: all 0.2s;
+        }
+        .search-btn:hover:not(:disabled) { filter: brightness(1.3); box-shadow: 0 0 10px rgba(255, 177, 0, 0.3); }
+        .search-btn:disabled {
+            background: var(--disabled-bg);
+            color: var(--disabled-text);
+            border-color: #444;
+            cursor: not-allowed;
+            filter: none;
+        }
+        /* Анимация точек */
+        .loading-text::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
         }
 
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80% { content: '...'; }
+        }
         .chart-section {
             margin-bottom: 50px;
             display: flex;
@@ -204,8 +227,8 @@
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
 
     const ICONS = {
-        'Horde': 'https://wow.zamimg.com/images/wow/icons/large/ui_horde_crest.jpg',
-        'Alliance': 'https://wow.zamimg.com/images/wow/icons/large/ui_alliance_crest.jpg',
+        'Horde': 'https://wow.zamimg.com/images/wow/icons/large/ui_hordeicon.jpg',
+        'Alliance': 'https://wow.zamimg.com/images/wow/icons/large/ui_allianceicon.jpg',
         'Warrior': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warrior.jpg',
         'Paladin': 'https://wow.zamimg.com/images/wow/icons/large/classicon_paladin.jpg',
         'Hunter': 'https://wow.zamimg.com/images/wow/icons/large/classicon_hunter.jpg',
@@ -219,7 +242,7 @@
         'Orc': 'https://wow.zamimg.com/images/wow/icons/large/race_orc_male.jpg',
         'Dwarf': 'https://wow.zamimg.com/images/wow/icons/large/race_dwarf_male.jpg',
         'Night Elf': 'https://wow.zamimg.com/images/wow/icons/large/race_nightelf_male.jpg',
-        'Undead': 'https://wow.zamimg.com/images/wow/icons/large/race_undead_male.jpg',
+        'Undead': 'https://wow.zamimg.com/images/wow/icons/large/achievement_character_undead_male.jpg',
         'Tauren': 'https://wow.zamimg.com/images/wow/icons/large/race_tauren_male.jpg',
         'Gnome': 'https://wow.zamimg.com/images/wow/icons/large/race_gnome_male.jpg',
         'Troll': 'https://wow.zamimg.com/images/wow/icons/large/race_troll_male.jpg',
@@ -243,7 +266,9 @@
 
     async function fetchStats() {
         const btn = document.getElementById('fetchBtn');
-        btn.innerText = "LOADING...";
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-text">Loading</span>';
+        // btn.innerText = "LOADING...";
         try {
             const query = new URLSearchParams();
             ['realmSelect','factionSelect','raceSelect','classSelect'].forEach(id => {
@@ -270,7 +295,7 @@
 
         } catch (e) {
             console.error(e);
-        } finally { btn.innerText = "GET STATS"; }
+        } finally { btn.disabled = false; btn.innerText = "Get Stats"; }
     }
 
     function renderFactions(factions) {
