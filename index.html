@@ -9,153 +9,181 @@
     <style>
         :root {
             --color-gold: #ffb100;
-            --panel-bg: rgba(10, 10, 10, 0.98);
+            --panel-bg: rgba(12, 12, 12, 0.98);
             --border-gold: #3e3324;
-            --font-main: "Segoe UI", Tahoma, sans-serif;
         }
 
         body {
             background: #050505 url('https://worldofwarcraft.blizzard.com/static/components/Backdrop/Backdrop-dark.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #f0ebe0;
-            font-family: var(--font-main);
-            margin: 0;
-            padding: 20px;
+            font-family: "Segoe UI", sans-serif;
+            margin: 0; padding: 20px;
         }
 
         .container {
-            max-width: 1000px; /* Вернул узкую ширину */
+            max-width: 900px;
             margin: 0 auto;
             background: var(--panel-bg);
             border: 2px solid var(--border-gold);
             padding: 30px;
-            box-shadow: 0 0 60px rgba(0,0,0,1);
+            box-shadow: 0 0 50px rgba(0,0,0,1);
         }
 
         h1 {
             text-align: center;
             color: var(--color-gold);
             text-transform: uppercase;
-            font-size: 2rem;
+            letter-spacing: 2px;
             margin-bottom: 30px;
         }
 
+        /* Фильтры */
         .filter-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid #333;
-            padding: 20px;
             margin-bottom: 30px;
-            align-items: end;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border-gold);
         }
 
-        .filter-group { display: flex; flex-direction: column; }
+        .filter-group { display: flex; flex-direction: column; gap: 5px; }
         .filter-group label {
             color: var(--color-gold);
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 0.75rem;
+            font-size: 11px;
             text-transform: uppercase;
+            font-weight: bold;
         }
 
         select, .search-btn {
-            background: #151515;
-            color: white;
+            background: #1a1a1a;
+            color: #fff;
             border: 1px solid var(--border-gold);
             padding: 10px;
-            font-size: 0.9rem;
+            font-size: 14px;
         }
 
         .search-btn {
             background: linear-gradient(to bottom, #4e3a23, #2a1d0d);
             color: var(--color-gold);
+            cursor: pointer;
             font-weight: bold;
             text-transform: uppercase;
-            cursor: pointer;
-            height: 42px;
+            margin-top: 18px;
         }
 
-        /* Новый Layout: Фракции занимают мало места */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 0.6fr 1.4fr; /* Левая колонка уже правой */
-            gap: 20px;
-        }
-
-        .class-box {
-            grid-column: span 2; /* График классов на всю ширину внизу */
-        }
-
-        @media (max-width: 800px) {
-            .charts-grid { grid-template-columns: 1fr; }
-            .class-box { grid-column: span 1; }
-        }
-
-        .chart-box {
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            border: 1px solid #222;
-            height: 350px;
+        .chart-section {
+            margin-bottom: 50px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            width: 100%; /* Секция на всю ширину */
         }
 
         h2 {
+            align-self: flex-start;
             color: var(--color-gold);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border-left: 4px solid var(--color-gold);
             padding-left: 12px;
-            margin-bottom: 20px;
             text-transform: uppercase;
-        }
-
-        .chart-wrapper {
-            flex-grow: 1;
-            position: relative;
-            min-height: 0;
-        }
-
-        .total-badge {
-            text-align: center;
-            font-size: 1.4rem;
             margin-bottom: 25px;
-            color: #ccc;
+        }
+        /* Обёртка, которая всегда по центру и сжимается под размер графиков */
+        .chart-wrapper {
+            position: relative;
+            margin: 0 auto;
+            /* Убираем fit-content, будем управлять шириной из JS */
+            display: block; 
+            overflow-x: auto; /* Включает скролл на мобилках */
+            scrollbar-width: none; /* Скрываем скроллбар в Firefox */
+        }
+        .chart-wrapper::-webkit-scrollbar {
+            display: none; /* Скрываем скроллбар в Chrome/Safari */
+        }
+        /* Контейнер для иконок */
+        .icons-row {
+            display: flex;
+            justify-content: flex-start; /* Начинаем от края, так как ширина контейнера будет точной */
+            margin-top: 10px;
+        }
+        .icon-box { display: flex; justify-content: center; align-items: center; }
+        .wow-icon-circle {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--color-gold);
+            background: #000;
+            object-fit: cover;
         }
 
-        .total-badge span { color: var(--color-gold); font-weight: bold; }
+        /* Фракции */
+        .faction-row {
+            display: flex; align-items: center;
+            width: 100%; max-width: 500px;
+            gap: 15px; margin-bottom: 15px;
+        }
+
         .results-area { display: none; }
+        .total-badge { text-align: center; font-size: 1.4rem; margin-bottom: 30px; }
+        .total-badge span { color: var(--color-gold); font-weight: bold; }
+
+        @media (max-width: 600px) {
+            .search-btn { margin-top: 0; }
+            .wow-icon-circle { width: 24px; height: 24px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Server Population Stats</h1>
+    <h1>Whitemane Statistics</h1>
 
     <div class="filter-form">
-        <div class="filter-group"><label>Realm</label><select id="realmSelect"><option value="Onyxia">Onyxia</option></select></div>
-        <div class="filter-group"><label>Faction</label><select id="factionSelect"><option value="">All Factions</option><option value="Horde">Horde</option><option value="Alliance">Alliance</option></select></div>
-        <div class="filter-group"><label>Race</label><select id="raceSelect"><option value="">All Races</option></select></div>
-        <div class="filter-group"><label>Class</label><select id="classSelect"><option value="">All Classes</option></select></div>
-        <button class="search-btn" id="fetchBtn" onclick="fetchStats()">Get Stats</button>
+        <div class="filter-group">
+            <label>Realm</label>
+            <select id="realmSelect"><option value="Onyxia">Onyxia</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Faction</label>
+            <select id="factionSelect">
+                <option value="">All Factions</option>
+                <option value="Horde">Horde</option>
+                <option value="Alliance">Alliance</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Race</label>
+            <select id="raceSelect"><option value="">All Races</option></select>
+        </div>
+        <div class="filter-group">
+            <label>Class</label>
+            <select id="classSelect"><option value="">All Classes</option></select>
+        </div>
+        <button class="search-btn" onclick="fetchStats()" id="fetchBtn">Get Stats</button>
     </div>
 
     <div id="resultsArea" class="results-area">
         <div class="total-badge">Characters Found: <span id="countVal">0</span></div>
         
-        <div class="charts-grid">
-            <div class="chart-box">
-                <h2>Factions</h2>
-                <div class="chart-wrapper"><canvas id="factionChart"></canvas></div>
+        <div class="chart-section">
+            <h2>Factions Balance</h2>
+            <div id="factionList" style="width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
+        </div>
+
+        <div class="chart-section">
+            <h2>Races Distribution</h2>
+            <div class="chart-wrapper" id="raceWrapper">
+                <canvas id="raceChart" height="220"></canvas>
+                <div id="raceIcons" class="icons-row"></div>
             </div>
-            <div class="chart-box">
-                <h2>Races</h2>
-                <div class="chart-wrapper"><canvas id="raceChart"></canvas></div>
-            </div>
-            <div class="chart-box class-box">
-                <h2>Classes</h2>
-                <div class="chart-wrapper"><canvas id="classChart"></canvas></div>
+        </div>
+
+        <div class="chart-section">
+            <h2>Classes Distribution</h2>
+            <div class="chart-wrapper" id="classWrapper">
+                <canvas id="classChart" height="220"></canvas>
+                <div id="classIcons" class="icons-row"></div>
             </div>
         </div>
     </div>
@@ -165,13 +193,37 @@
     const API_URL = 'https://emikseoakgajjwflivva.supabase.co/functions/v1/get-stats';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
 
+    const ICONS = {
+        'Horde': 'https://wow.zamimg.com/images/wow/icons/large/ui_horde_crest.jpg',
+        'Alliance': 'https://wow.zamimg.com/images/wow/icons/large/ui_alliance_crest.jpg',
+        'Warrior': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warrior.jpg',
+        'Paladin': 'https://wow.zamimg.com/images/wow/icons/large/classicon_paladin.jpg',
+        'Hunter': 'https://wow.zamimg.com/images/wow/icons/large/classicon_hunter.jpg',
+        'Rogue': 'https://wow.zamimg.com/images/wow/icons/large/classicon_rogue.jpg',
+        'Priest': 'https://wow.zamimg.com/images/wow/icons/large/classicon_priest.jpg',
+        'Shaman': 'https://wow.zamimg.com/images/wow/icons/large/classicon_shaman.jpg',
+        'Mage': 'https://wow.zamimg.com/images/wow/icons/large/classicon_mage.jpg',
+        'Warlock': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warlock.jpg',
+        'Druid': 'https://wow.zamimg.com/images/wow/icons/large/classicon_druid.jpg',
+        'Human': 'https://wow.zamimg.com/images/wow/icons/large/race_human_male.jpg',
+        'Orc': 'https://wow.zamimg.com/images/wow/icons/large/race_orc_male.jpg',
+        'Dwarf': 'https://wow.zamimg.com/images/wow/icons/large/race_dwarf_male.jpg',
+        'Night Elf': 'https://wow.zamimg.com/images/wow/icons/large/race_nightelf_male.jpg',
+        'Undead': 'https://wow.zamimg.com/images/wow/icons/large/race_undead_male.jpg',
+        'Tauren': 'https://wow.zamimg.com/images/wow/icons/large/race_tauren_male.jpg',
+        'Gnome': 'https://wow.zamimg.com/images/wow/icons/large/race_gnome_male.jpg',
+        'Troll': 'https://wow.zamimg.com/images/wow/icons/large/race_troll_male.jpg',
+        'Blood Elf': 'https://wow.zamimg.com/images/wow/icons/large/race_bloodelf_male.jpg',
+        'Draenei': 'https://wow.zamimg.com/images/wow/icons/large/race_draenei_male.jpg'
+    };
+
     const CLASS_COLORS = {
         'Paladin': '#F58CBA', 'Mage': '#3FC7EB', 'Hunter': '#ABD473', 'Warlock': '#8787ED',
         'Shaman': '#0070DE', 'Druid': '#FF7D0A', 'Priest': '#FFFFFF', 'Rogue': '#FFF569', 'Warrior': '#C79C6E'
     };
 
     const RACES = ["Blood Elf", "Draenei", "Dwarf", "Gnome", "Human", "Night Elf", "Orc", "Tauren", "Troll", "Undead"];
-    const CLASSES = ["Death Knight", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"];
+    const CLASSES = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"];
     
     RACES.forEach(r => document.getElementById('raceSelect').add(new Option(r, r)));
     CLASSES.forEach(c => document.getElementById('classSelect').add(new Option(c, c)));
@@ -179,107 +231,138 @@
     Chart.register(ChartDataLabels);
     let charts = {};
 
-    function getChartConfig() {
-        return {
+    async function fetchStats() {
+        const btn = document.getElementById('fetchBtn');
+        btn.innerText = "LOADING...";
+        try {
+            const query = new URLSearchParams();
+            ['realmSelect','factionSelect','raceSelect','classSelect'].forEach(id => {
+                const val = document.getElementById(id).value;
+                if(val) query.append(id.replace('Select',''), val);
+            });
+
+            const res = await fetch(`${API_URL}?${query.toString()}`, { 
+                headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` } 
+            });
+            const data = await res.json();
+
+            if (!data || data.total === 0) {
+                alert("No characters found with these filters!");
+                return;
+            }
+
+            document.getElementById('resultsArea').style.display = 'block';
+            document.getElementById('countVal').innerText = data.total.toLocaleString();
+
+            renderFactions(data.factions || []);
+            renderVChart('raceChart', 'raceIcons', 'raceWrapper', data.races, () => '#d4a137');
+            renderVChart('classChart', 'classIcons', 'classWrapper', data.classes, (i) => CLASS_COLORS[i.name] || '#999');
+
+        } catch (e) {
+            console.error(e);
+        } finally { btn.innerText = "GET STATS"; }
+    }
+
+    function renderFactions(factions) {
+        const container = document.getElementById('factionList');
+        container.innerHTML = '';
+        const total = factions.reduce((a, b) => a + b.count, 0);
+        factions.forEach(f => {
+            const perc = ((f.count / total) * 100).toFixed(1);
+            const color = f.name === 'Horde' ? '#8c1616' : '#004a94';
+            const row = document.createElement('div');
+            row.className = 'faction-row';
+            row.innerHTML = `
+                <img src="${ICONS[f.name]}" class="wow-icon-circle">
+                <div style="flex-grow:1; background:#222; height:24px; position:relative; border:1px solid #333;">
+                    <div style="width:${perc}%; background:${color}; height:100%;"></div>
+                    <span style="position:absolute; right:10px; top:0; font-size:12px; font-weight:bold; line-height:24px; text-shadow:1px 1px 2px #000;">
+                        ${f.name}: ${perc}% (${f.count.toLocaleString()})
+                    </span>
+                </div>`;
+            container.appendChild(row);
+        });
+    }
+
+    function renderVChart(canvasId, iconId, wrapperId, data, colorFn) {
+        if (!data || !data.length) return;
+
+        const colWidth = 55; // Ширина одной секции (колонка + отступ)
+        const totalWidth = data.length * colWidth;
+        
+        const wrapper = document.getElementById(wrapperId);
+        let canvas = document.getElementById(canvasId);
+
+        // ВАЖНО: Принудительно задаем ширину контейнеру, чтобы он не растягивался
+        wrapper.style.width = totalWidth + 'px';
+
+        if (charts[canvasId]) {
+            charts[canvasId].destroy();
+        }
+
+        // Задаем физические размеры канваса
+        canvas.width = totalWidth;
+        canvas.style.width = totalWidth + 'px';
+        canvas.height = 220;
+        canvas.style.height = '220px';
+
+        charts[canvasId] = new Chart(canvas, {
             type: 'bar',
-            data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+            data: {
+                labels: data.map(d => d.name),
+                datasets: [{
+                    data: data.map(d => d.count),
+                    backgroundColor: data.map(colorFn),
+                    barThickness: 32,
+                    borderRadius: 2
+                }]
+            },
             options: {
-                responsive: true,
+                responsive: false, // Отключаем любую адаптивность библиотеки
                 maintainAspectRatio: false,
-                barPercentage: 0.9,
-                categoryPercentage: 0.9,
+                layout: {
+                    padding: { top: 25, left: 0, right: 0, bottom: 0 }
+                },
                 plugins: {
                     legend: { display: false },
                     datalabels: {
                         color: '#fff',
                         anchor: 'end',
                         align: 'top',
-                        offset: 2,
+                        offset: 4,
                         font: { weight: 'bold', size: 10 },
                         formatter: (val, ctx) => {
                             const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                            return sum > 0 ? ((val / sum) * 100).toFixed(1) + '%' : '';
+                            return ((val / sum) * 100).toFixed(1) + '%';
                         }
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#bbb', font: { size: 10 } }, grid: { display: false } },
+                    x: { 
+                        display: false,
+                        offset: true // Добавляет правильные отступы по краям осей
+                    },
                     y: { 
-                        display: true, // Вернул ось значений слева
-                        beginAtZero: true, 
-                        grid: { color: '#222' }, 
-                        ticks: { color: '#666', font: { size: 9 } } 
+                        display: false, 
+                        beginAtZero: true 
                     }
                 }
             }
-        };
-    }
-
-    async function fetchStats() {
-        const btn = document.getElementById('fetchBtn');
-        const resultsArea = document.getElementById('resultsArea');
-        
-        const params = new URLSearchParams({
-            realm: document.getElementById('realmSelect').value,
-            faction: document.getElementById('factionSelect').value,
-            race: document.getElementById('raceSelect').value,
-            class: document.getElementById('classSelect').value
         });
-        [...params.entries()].forEach(([k, v]) => !v && params.delete(k));
 
-        try {
-            btn.disabled = true;
-            btn.innerText = "Loading...";
-
-            const res = await fetch(`${API_URL}?${params}`, {
-                method: 'GET',
-                headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` }
-            });
-
-            const data = await res.json();
-            if (data.total === 0) { alert("No characters found!"); return; }
-
-            resultsArea.style.display = 'block';
-            document.getElementById('countVal').innerText = data.total.toLocaleString();
-
-            if (!charts.f) {
-                charts.f = new Chart(document.getElementById('factionChart'), getChartConfig());
-                charts.r = new Chart(document.getElementById('raceChart'), getChartConfig());
-                charts.c = new Chart(document.getElementById('classChart'), getChartConfig());
-            }
-
-            updateChart(charts.f, data.factions, (i) => i.name === 'Horde' ? '#8c1616' : '#004a94');
-            updateChart(charts.r, data.races, () => '#d4a137');
-            updateChart(charts.c, data.classes, (i) => CLASS_COLORS[i.name] || '#999');
-
-        } catch (e) {
-            console.error(e);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Get Stats";
-        }
+        // Отрисовка иконок
+        const iconContainer = document.getElementById(iconId);
+        iconContainer.innerHTML = '';
+        data.forEach(item => {
+            const box = document.createElement('div');
+            box.className = 'icon-box';
+            box.style.width = colWidth + 'px'; 
+            box.style.flexShrink = '0'; // Запрещаем иконкам сжиматься на мобилках
+            box.innerHTML = `<img src="${ICONS[item.name]}" class="wow-icon-circle" title="${item.name}">`;
+            iconContainer.appendChild(box);
+        });
     }
 
-    function updateChart(chart, data, colorFn) {
-        const baseColors = data.map(colorFn);
-        chart.data.labels = data.map(d => d.name);
-        chart.data.datasets[0].data = data.map(d => d.count);
-        chart.data.datasets[0].backgroundColor = baseColors;
-        // Более яркий Hover (коэффициент 80 вместо 40)
-        chart.data.datasets[0].hoverBackgroundColor = baseColors.map(c => adjustColor(c, 80));
-        chart.update();
-    }
-
-    function adjustColor(hex, amt) {
-        let col = hex.replace('#', '');
-        let r = parseInt(col.substring(0,2), 16) + amt;
-        let g = parseInt(col.substring(2,4), 16) + amt;
-        let b = parseInt(col.substring(4,6), 16) + amt;
-        r = Math.min(255, Math.max(0, r));
-        g = Math.min(255, Math.max(0, g));
-        b = Math.min(255, Math.max(0, b));
-        return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
-    }
 </script>
 </body>
 </html>
