@@ -39,15 +39,7 @@
             letter-spacing: 2px;
             margin-bottom: 30px;
         }
-        h2 {
-            align-self: flex-start;
-            color: var(--color-gold);
-            font-size: 1.1rem;
-            border-left: 4px solid var(--color-gold);
-            padding-left: 12px;
-            text-transform: uppercase;
-            margin-bottom: 25px;
-        }
+
         /* Фильтры */
         .filter-form {
             display: grid;
@@ -97,7 +89,6 @@
             content: '';
             animation: dots 1.5s steps(4, end) infinite;
         }
-
         @keyframes dots {
             0%, 20% { content: ''; }
             40% { content: '.'; }
@@ -109,39 +100,37 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
+            width: 100%; /* Секция на всю ширину */
         }
 
+        h2 {
+            align-self: flex-start;
+            color: var(--color-gold);
+            font-size: 1.1rem;
+            border-left: 4px solid var(--color-gold);
+            padding-left: 12px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+        }
+        /* Обёртка, которая всегда по центру и сжимается под размер графиков */
         .chart-wrapper {
             position: relative;
             margin: 0 auto;
-            width: 100%; /* По умолчанию на всю ширину */
-            max-width: 600px; /* Но не шире этого значения на десктопе */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            /* Убираем fit-content, будем управлять шириной из JS */
+            display: block; 
+            overflow-x: auto; /* Включает скролл на мобилках */
+            scrollbar-width: none; /* Скрываем скроллбар в Firefox */
         }
         .chart-wrapper::-webkit-scrollbar {
             display: none; /* Скрываем скроллбар в Chrome/Safari */
         }
-        canvas {
-            width: 100% !important; /* Chart.js сам будет управлять отрисовкой */
-            height: 220px !important;
-        }
         /* Контейнер для иконок */
         .icons-row {
             display: flex;
-            justify-content: space-between; /* Важно для выравнивания по сетке */
-            width: 100%;
+            justify-content: flex-start; /* Начинаем от края, так как ширина контейнера будет точной */
             margin-top: 10px;
-            position: relative;
         }
-        .icon-box {
-            position: absolute; /* Будем позиционировать иконки точно по пикселям */
-            transform: translateX(-50%); /* Центрируем иконку относительно точки */
-            display: flex;
-            justify-content: center;
-        }
+        .icon-box { display: flex; justify-content: center; align-items: center; }
         .wow-icon-circle {
             width: 32px; height: 32px;
             border-radius: 50%;
@@ -170,7 +159,7 @@
 <body>
 
 <div class="container">
-    <h1>Whitemane Statistics</h1>
+    <h1>Onyxia TBC Class Statistics</h1>
 
     <div class="filter-form">
         <div class="filter-group">
@@ -238,6 +227,7 @@
         'Mage': 'https://wow.zamimg.com/images/wow/icons/large/classicon_mage.jpg',
         'Warlock': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warlock.jpg',
         'Druid': 'https://wow.zamimg.com/images/wow/icons/large/classicon_druid.jpg',
+        'Death Knight': 'https://wow.zamimg.com/images/wow/icons/large/classicon_deathknight.jpg',
         'Human': 'https://wow.zamimg.com/images/wow/icons/large/race_human_male.jpg',
         'Orc': 'https://wow.zamimg.com/images/wow/icons/large/race_orc_male.jpg',
         'Dwarf': 'https://wow.zamimg.com/images/wow/icons/large/race_dwarf_male.jpg',
@@ -266,9 +256,9 @@
 
     async function fetchStats() {
         const btn = document.getElementById('fetchBtn');
+        // btn.innerText = "LOADING...";
         btn.disabled = true;
         btn.innerHTML = '<span class="loading-text">Loading</span>';
-        // btn.innerText = "LOADING...";
         try {
             const query = new URLSearchParams();
             ['realmSelect','factionSelect','raceSelect','classSelect'].forEach(id => {
@@ -295,6 +285,7 @@
 
         } catch (e) {
             console.error(e);
+        // } finally { btn.innerText = "GET STATS"; }
         } finally { btn.disabled = false; btn.innerText = "Get Stats"; }
     }
 
@@ -322,10 +313,25 @@
     function renderVChart(canvasId, iconId, wrapperId, data, colorFn) {
         if (!data || !data.length) return;
 
-        const canvas = document.getElementById(canvasId);
-        if (charts[canvasId]) charts[canvasId].destroy();
+        const colWidth = 55; // Ширина одной секции (колонка + отступ)
+        const totalWidth = data.length * colWidth;
+        
+        const wrapper = document.getElementById(wrapperId);
+        let canvas = document.getElementById(canvasId);
 
-        // Создаем график
+        // ВАЖНО: Принудительно задаем ширину контейнеру, чтобы он не растягивался
+        wrapper.style.width = totalWidth + 'px';
+
+        if (charts[canvasId]) {
+            charts[canvasId].destroy();
+        }
+
+        // Задаем физические размеры канваса
+        canvas.width = totalWidth;
+        canvas.style.width = totalWidth + 'px';
+        canvas.height = 220;
+        canvas.style.height = '220px';
+
         charts[canvasId] = new Chart(canvas, {
             type: 'bar',
             data: {
@@ -333,26 +339,23 @@
                 datasets: [{
                     data: data.map(d => d.count),
                     backgroundColor: data.map(colorFn),
-                    // Убираем barThickness, используем categoryPercentage
-                    categoryPercentage: 0.8, 
-                    barPercentage: 0.9,
+                    barThickness: 32,
                     borderRadius: 2
                 }]
             },
             options: {
-                responsive: true,
+                responsive: false, // Отключаем любую адаптивность библиотеки
                 maintainAspectRatio: false,
-                animation: {
-                    // Ждем окончания анимации, чтобы правильно расставить иконки
-                    onComplete: () => positionIcons(charts[canvasId], iconId, data)
+                layout: {
+                    padding: { top: 25, left: 0, right: 0, bottom: 0 }
                 },
-                layout: { padding: { top: 25, bottom: 0 } },
                 plugins: {
                     legend: { display: false },
                     datalabels: {
                         color: '#fff',
                         anchor: 'end',
                         align: 'top',
+                        offset: 4,
                         font: { weight: 'bold', size: 10 },
                         formatter: (val, ctx) => {
                             const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
@@ -361,34 +364,28 @@
                     }
                 },
                 scales: {
-                    x: { display: false },
-                    y: { display: false, beginAtZero: true }
+                    x: { 
+                        display: false,
+                        offset: true // Добавляет правильные отступы по краям осей
+                    },
+                    y: { 
+                        display: false, 
+                        beginAtZero: true 
+                    }
                 }
             }
         });
 
-        // Функция для точного позиционирования иконок
-        function positionIcons(chart, iconContainerId, items) {
-            const iconContainer = document.getElementById(iconContainerId);
-            iconContainer.innerHTML = '';
-            
-            // Получаем метаданные отрисованных столбцов
-            const meta = chart.getDatasetMeta(0);
-            
-            items.forEach((item, index) => {
-                const columnCenter = meta.data[index].x; // Центр столбика в px
-                
-                const box = document.createElement('div');
-                box.className = 'icon-box';
-                box.style.left = columnCenter + 'px'; // Ставим иконку точно по центру
-                box.innerHTML = `<img src="${ICONS[item.name]}" class="wow-icon-circle" title="${item.name}">`;
-                iconContainer.appendChild(box);
-            });
-        }
-
-        // Обработка изменения размера окна (перепозиционирование иконок)
-        window.addEventListener('resize', () => {
-            if(charts[canvasId]) positionIcons(charts[canvasId], iconId, data);
+        // Отрисовка иконок
+        const iconContainer = document.getElementById(iconId);
+        iconContainer.innerHTML = '';
+        data.forEach(item => {
+            const box = document.createElement('div');
+            box.className = 'icon-box';
+            box.style.width = colWidth + 'px'; 
+            box.style.flexShrink = '0'; // Запрещаем иконкам сжиматься на мобилках
+            box.innerHTML = `<img src="${ICONS[item.name]}" class="wow-icon-circle" title="${item.name}">`;
+            iconContainer.appendChild(box);
         });
     }
 
