@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WoW Server Stats Explorer</title>
+    <title>WoW Onyxia Server Stats Explorer</title>
     <style>
         :root {
             --color-gold: #ffb100;
@@ -15,8 +15,7 @@
         }
 
         body {
-            background: #050505 url('https://worldofwarcraft.blizzard.com/static/components/Backdrop/Backdrop-dark.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background: #050505;
             color: #f0ebe0;
             font-family: "Segoe UI", Tahoma, sans-serif;
             margin: 0; padding: 20px;
@@ -80,7 +79,7 @@
 
         /* Контейнер для центрирования самих графиков */
         .stat-container {
-            max-width: 600px; /* Ограничение для удобства чтения */
+            max-width: 500px; /* Ограничение для удобства чтения */
             margin: 0 auto;   /* Центрируем блок на экране */
         }
 
@@ -94,7 +93,7 @@
             text-align: left; /* Заголовок выровнен по краю узкого контейнера */
         }
         
-        .stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; width: 100%; }
+        .stat-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; width: 100%; }
         .icon-circle { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--color-gold); background: #000; flex-shrink: 0; object-fit: cover; }
         
         .progress-container { flex-grow: 1; background: var(--bar-bg); height: 26px; border: 1px solid #333; position: relative; overflow: hidden; border-radius: 2px; }
@@ -103,7 +102,7 @@
         .label-text {
             position: absolute; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 10px; box-sizing: border-box; font-size: 12px; font-weight: bold;
+            padding: 0 10px; box-sizing: border-box; font-size: 13px; font-weight: bold;
             text-shadow: 1px 1px 1px #000; pointer-events: none;
             color: #fff;
         }
@@ -120,7 +119,7 @@
 <body>
 
 <div class="container">
-    <h1>Onyxia TBC Class Statistics</h1>
+    <h1>Onyxia TBC Characters Statistics</h1>
 
     <div class="filter-form">
         <div class="filter-group">
@@ -128,7 +127,7 @@
             <select id="realmSelect"><option value="Onyxia">Onyxia</option></select>
         </div>
         <div class="filter-group">
-            <label>Faction</label>
+            <label>Factions</label>
             <select id="factionSelect">
                 <option value="">All Factions</option>
                 <option value="Horde">Horde</option>
@@ -136,11 +135,11 @@
             </select>
         </div>
         <div class="filter-group">
-            <label>Race</label>
+            <label>Races</label>
             <select id="raceSelect"><option value="">All Races</option></select>
         </div>
         <div class="filter-group">
-            <label>Class</label>
+            <label>Classes</label>
             <select id="classSelect"><option value="">All Classes</option></select>
         </div>
         <button class="search-btn" onclick="fetchStats()" id="fetchBtn">Get Stats</button>
@@ -151,21 +150,21 @@
         
         <div class="stat-section">
             <div class="stat-container">
-                <h2>Factions Balance</h2>
+                <h2>Factions</h2>
                 <div id="factionList"></div>
             </div>
         </div>
 
         <div class="stat-section">
             <div class="stat-container">
-                <h2>Races Distribution</h2>
+                <h2>Races</h2>
                 <div id="raceList"></div>
             </div>
         </div>
 
         <div class="stat-section">
             <div class="stat-container">
-                <h2>Classes Distribution</h2>
+                <h2>Classes</h2>
                 <div id="classList"></div>
             </div>
         </div>
@@ -175,6 +174,8 @@
 <script>
     const API_URL = 'https://emikseoakgajjwflivva.supabase.co/functions/v1/get-stats';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
+    
+    const statsCache = new Map();  // Объект для локального кэширования запросов
 
     const ICONS = {
         'Horde': 'https://wow.zamimg.com/images/wow/icons/large/ui_hordeicon.jpg',
@@ -210,52 +211,95 @@
     const RACES = ["Blood Elf", "Draenei", "Dwarf", "Gnome", "Human", "Night Elf", "Orc", "Tauren", "Troll", "Undead"];
     const CLASSES = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"];
     
+    // Инициализация фильтров
     const raceSel = document.getElementById('raceSelect');
     const classSel = document.getElementById('classSelect');
     RACES.forEach(r => raceSel.add(new Option(r, r)));
     CLASSES.forEach(c => classSel.add(new Option(c, c)));
 
-    async function fetchStats() {
+
+    // 1. ПРИ ЗАГРУЗКЕ СТРАНИЦЫ: Читаем URL и запускаем поиск
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        let hasParams = false;
+
+        ['realm', 'faction', 'race', 'class'].forEach(key => {
+            const val = urlParams.get(key);
+            if (val) {
+                const el = document.getElementById(key + 'Select');
+                if (el) {
+                    el.value = val;
+                    hasParams = true;
+                }
+            }
+        });
+
+        if (hasParams) fetchStats(true); // true означает, что не нужно перезаписывать URL снова
+    });
+
+    async function fetchStats(skipPushState = false) {
         const btn = document.getElementById('fetchBtn');
+        const realm = document.getElementById('realmSelect').value;
+        const faction = document.getElementById('factionSelect').value;
+        const race = document.getElementById('raceSelect').value;
+        const classVal = document.getElementById('classSelect').value;
+
+        // Создаем ключ для кэша и URL параметров
+        const params = new URLSearchParams();
+        if(realm) params.append('realm', realm);
+        if(faction) params.append('faction', faction);
+        if(race) params.append('race', race);
+        if(classVal) params.append('class', classVal);
+        
+        const cacheKey = params.toString();
+
+        // 2. ОБНОВЛЯЕМ URL (History API)
+        if (!skipPushState) {
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + cacheKey;
+            window.history.pushState({ path: newUrl }, '', newUrl);
+        }
+
+        // 3. ПРОВЕРЯЕМ КЭШ
+        if (statsCache.has(cacheKey)) {
+            console.log('Using cached data for:', cacheKey);
+            displayResults(statsCache.get(cacheKey));
+            return;
+        }
+
         btn.disabled = true;
         btn.innerText = "LOADING...";
         
         try {
-            const params = new URLSearchParams();
-            const realm = document.getElementById('realmSelect').value;
-            const faction = document.getElementById('factionSelect').value;
-            const race = document.getElementById('raceSelect').value;
-            const classVal = document.getElementById('classSelect').value;
-
-            if(realm) params.append('realm', realm);
-            if(faction) params.append('faction', faction);
-            if(race) params.append('race', race);
-            if(classVal) params.append('class', classVal);
-
-            const res = await fetch(`${API_URL}?${params.toString()}`, {
+            const res = await fetch(`${API_URL}?${cacheKey}`, {
                 headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` }
             });
             const data = await res.json();
 
             if (!data || data.total === 0) {
-                alert("No characters found with these filters!");
+                alert("No characters found!");
                 return;
             }
 
-            document.getElementById('resultsArea').style.display = 'block';
-            document.getElementById('countVal').innerText = data.total.toLocaleString();
-
-            renderBars('factionList', data.factions);
-            renderBars('raceList', data.races);
-            renderBars('classList', data.classes);
+            // СОХРАНЯЕМ В КЭШ
+            statsCache.set(cacheKey, data);
+            displayResults(data);
 
         } catch (e) {
             console.error(e);
-            alert("Error fetching data. Check console.");
+            alert("Connection error");
         } finally {
             btn.disabled = false;
             btn.innerText = "Get Stats";
         }
+    }
+
+    function displayResults(data) {
+        document.getElementById('resultsArea').style.display = 'block';
+        document.getElementById('countVal').innerText = data.total.toLocaleString();
+
+        renderBars('factionList', data.factions);
+        renderBars('raceList', data.races);
+        renderBars('classList', data.classes);
     }
 
     function renderBars(containerId, items) {
