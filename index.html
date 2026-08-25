@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WoW Onyxia Server Stats Explorer</title>
+    <title>Warmane Players Balance Stats</title>
     <style>
         :root {
             --color-gold: #ffb100;
@@ -119,12 +119,12 @@
 <body>
 
 <div class="container">
-    <h1>Onyxia TBC Characters Statistics</h1>
+    <h1>Warmane Players Balance Stats</h1>
 
     <div class="filter-form">
         <div class="filter-group">
             <label>Realm</label>
-            <select id="realmSelect"><option value="Onyxia">Onyxia</option></select>
+            <select id="realmSelect"><option value="Onyxia-TBC">Onyxia</option></select>
         </div>
         <div class="filter-group">
             <label>Factions</label>
@@ -172,34 +172,37 @@
 </div>
 
 <script>
-    const API_URL = 'https://emikseoakgajjwflivva.supabase.co/functions/v1/get-stats';
+    const URL = 'https://emikseoakgajjwflivva.supabase.co'
+    const API_URL = `${URL}/functions/v1/get-stats`;
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
-    
-    const statsCache = new Map();  // Объект для локального кэширования запросов
+
+    const STORAGE_URL = `https://${URL}/storage/v1/object/public/icons`;
 
     const ICONS = {
-        'Horde': 'https://wow.zamimg.com/images/wow/icons/large/ui_hordeicon.jpg',
-        'Alliance': 'https://wow.zamimg.com/images/wow/icons/large/ui_allianceicon.jpg',
-        'Warrior': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warrior.jpg',
-        'Paladin': 'https://wow.zamimg.com/images/wow/icons/large/classicon_paladin.jpg',
-        'Hunter': 'https://wow.zamimg.com/images/wow/icons/large/classicon_hunter.jpg',
-        'Rogue': 'https://wow.zamimg.com/images/wow/icons/large/classicon_rogue.jpg',
-        'Priest': 'https://wow.zamimg.com/images/wow/icons/large/classicon_priest.jpg',
-        'Shaman': 'https://wow.zamimg.com/images/wow/icons/large/classicon_shaman.jpg',
-        'Mage': 'https://wow.zamimg.com/images/wow/icons/large/classicon_mage.jpg',
-        'Warlock': 'https://wow.zamimg.com/images/wow/icons/large/classicon_warlock.jpg',
-        'Druid': 'https://wow.zamimg.com/images/wow/icons/large/classicon_druid.jpg',
-        'Death Knight': 'https://wow.zamimg.com/images/wow/icons/large/classicon_deathknight.jpg',
-        'Human': 'https://wow.zamimg.com/images/wow/icons/large/race_human_male.jpg',
-        'Orc': 'https://wow.zamimg.com/images/wow/icons/large/race_orc_male.jpg',
-        'Dwarf': 'https://wow.zamimg.com/images/wow/icons/large/race_dwarf_male.jpg',
-        'Night Elf': 'https://wow.zamimg.com/images/wow/icons/large/race_nightelf_male.jpg',
-        'Undead': 'https://wow.zamimg.com/images/wow/icons/large/achievement_character_undead_male.jpg',
-        'Tauren': 'https://wow.zamimg.com/images/wow/icons/large/race_tauren_male.jpg',
-        'Gnome': 'https://wow.zamimg.com/images/wow/icons/large/race_gnome_male.jpg',
-        'Troll': 'https://wow.zamimg.com/images/wow/icons/large/race_troll_male.jpg',
-        'Blood Elf': 'https://wow.zamimg.com/images/wow/icons/large/race_bloodelf_male.jpg',
-        'Draenei': 'https://wow.zamimg.com/images/wow/icons/large/race_draenei_male.jpg'
+        'Horde': `${STORAGE_URL}/factions/faction_horde.jpg`,
+        'Alliance': `${STORAGE_URL}/factions/faction_alliance.jpg`,
+
+        'Warrior': `${STORAGE_URL}/classes/class_warrior.jpg`,
+        'Paladin': `${STORAGE_URL}/classes/class_paladin.jpg`,
+        'Hunter': `${STORAGE_URL}/classes/class_hunter.jpg`,
+        'Rogue': `${STORAGE_URL}/classes/class_rogue.jpg`,
+        'Priest': `${STORAGE_URL}/classes/class_priest.jpg`,
+        'Shaman': `${STORAGE_URL}/classes/class_shaman.jpg`,
+        'Mage': `${STORAGE_URL}/classes/class_mage.jpg`,
+        'Warlock': `${STORAGE_URL}/classes/class_warlock.jpg`,
+        'Druid': `${STORAGE_URL}/classes/class_druid.jpg`,
+        'Death Knight': `${STORAGE_URL}/classes/class_deathknight.jpg`,
+
+        'Human': `${STORAGE_URL}/races/race_human_male.jpg`,
+        'Orc': `${STORAGE_URL}/races/race_orc_male.jpg`,
+        'Dwarf': `${STORAGE_URL}/races/race_dwarf_male.jpg`,
+        'Night Elf': `${STORAGE_URL}/races/race_nightelf_male.jpg`,
+        'Undead': `${STORAGE_URL}/races/race_undead_male.jpg`,
+        'Tauren': `${STORAGE_URL}/races/race_tauren_male.jpg`,
+        'Gnome': `${STORAGE_URL}/races/race_gnome_male.jpg`,
+        'Troll': `${STORAGE_URL}/races/race_troll_male.jpg`,
+        'Blood Elf': `${STORAGE_URL}/races/race_bloodelf_male.jpg`,
+        'Draenei': `${STORAGE_URL}/races/race_draenei_male.jpg`,
     };
 
     const COLORS = {
@@ -211,6 +214,8 @@
     const RACES = ["Blood Elf", "Draenei", "Dwarf", "Gnome", "Human", "Night Elf", "Orc", "Tauren", "Troll", "Undead"];
     const CLASSES = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"];
     
+    const statsCache = new Map();  // Объект для локального кэширования запросов
+
     // Инициализация фильтров
     const raceSel = document.getElementById('raceSelect');
     const classSel = document.getElementById('classSelect');
