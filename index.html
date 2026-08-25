@@ -124,7 +124,7 @@
     <div class="filter-form">
         <div class="filter-group">
             <label>Realm</label>
-            <select id="realmSelect"><option value="Onyxia-TBC">Onyxia</option></select>
+            <select id="realmSelect"><option value="Onyxia">Onyxia</option></select>
         </div>
         <div class="filter-group">
             <label>Factions</label>
@@ -176,7 +176,7 @@
     const API_URL = `${URL}/functions/v1/get-stats`;
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
 
-    const STORAGE_URL = `https://${URL}/storage/v1/object/public/icons`;
+    const STORAGE_URL = `${URL}/storage/v1/object/public/icons`;
 
     const ICONS = {
         'Horde': `${STORAGE_URL}/factions/faction_horde.jpg`,
