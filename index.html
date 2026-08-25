@@ -172,37 +172,34 @@
 </div>
 
 <script>
-    const URL = 'https://emikseoakgajjwflivva.supabase.co'
-    const API_URL = `${URL}/functions/v1/get-stats`;
+    const API_URL = 'https://emikseoakgajjwflivva.supabase.co/functions/v1/get-stats';
     const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtaWtzZW9ha2dhamp3ZmxpdnZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzODMwOTcsImV4cCI6MjA4MTk1OTA5N30.497WMmn_pSOb-3KnQ9Vai7-wi2F6XLyUfx6bNsSd5WU';
-
-    const STORAGE_URL = `${URL}/storage/v1/object/public/icons`;
+    
+    const statsCache = new Map();  // Объект для локального кэширования запросов
 
     const ICONS = {
-        'Horde': `${STORAGE_URL}/factions/faction_horde.jpg`,
-        'Alliance': `${STORAGE_URL}/factions/faction_alliance.jpg`,
-
-        'Warrior': `${STORAGE_URL}/classes/class_warrior.jpg`,
-        'Paladin': `${STORAGE_URL}/classes/class_paladin.jpg`,
-        'Hunter': `${STORAGE_URL}/classes/class_hunter.jpg`,
-        'Rogue': `${STORAGE_URL}/classes/class_rogue.jpg`,
-        'Priest': `${STORAGE_URL}/classes/class_priest.jpg`,
-        'Shaman': `${STORAGE_URL}/classes/class_shaman.jpg`,
-        'Mage': `${STORAGE_URL}/classes/class_mage.jpg`,
-        'Warlock': `${STORAGE_URL}/classes/class_warlock.jpg`,
-        'Druid': `${STORAGE_URL}/classes/class_druid.jpg`,
-        'Death Knight': `${STORAGE_URL}/classes/class_deathknight.jpg`,
-
-        'Human': `${STORAGE_URL}/races/race_human_male.jpg`,
-        'Orc': `${STORAGE_URL}/races/race_orc_male.jpg`,
-        'Dwarf': `${STORAGE_URL}/races/race_dwarf_male.jpg`,
-        'Night Elf': `${STORAGE_URL}/races/race_nightelf_male.jpg`,
-        'Undead': `${STORAGE_URL}/races/race_undead_male.jpg`,
-        'Tauren': `${STORAGE_URL}/races/race_tauren_male.jpg`,
-        'Gnome': `${STORAGE_URL}/races/race_gnome_male.jpg`,
-        'Troll': `${STORAGE_URL}/races/race_troll_male.jpg`,
-        'Blood Elf': `${STORAGE_URL}/races/race_bloodelf_male.jpg`,
-        'Draenei': `${STORAGE_URL}/races/race_draenei_male.jpg`,
+        'Horde': 'assets/icons/faction_horde.jpg',
+        'Alliance': 'assets/icons/faction_alliance.jpg',
+        'Warrior': 'assets/icons/class_warrior.jpg',
+        'Paladin': 'assets/icons/class_paladin.jpg',
+        'Hunter': 'assets/icons/class_hunter.jpg',
+        'Rogue': 'assets/icons/class_rogue.jpg',
+        'Priest': 'assets/icons/class_priest.jpg',
+        'Shaman': 'assets/icons/class_shaman.jpg',
+        'Mage': 'assets/icons/class_mage.jpg',
+        'Warlock': 'assets/icons/class_warlock.jpg',
+        'Druid': 'assets/icons/class_druid.jpg',
+        'Death Knight': 'assets/icons/class_deathknight.jpg',
+        'Human': 'assets/icons/race_human_male.jpg',
+        'Orc': 'assets/icons/race_orc_male.jpg',
+        'Dwarf': 'assets/icons/race_dwarf_male.jpg',
+        'Night Elf': 'assets/icons/race_nightelf_male.jpg',
+        'Undead': 'assets/icons/race_undead_male.jpg',
+        'Tauren': 'assets/icons/race_tauren_male.jpg',
+        'Gnome': 'assets/icons/race_gnome_male.jpg',
+        'Troll': 'assets/icons/race_troll_male.jpg',
+        'Blood Elf': 'assets/icons/race_bloodelf_male.jpg',
+        'Draenei': 'assets/icons/race_draenei_male.jpg'
     };
 
     const COLORS = {
@@ -214,8 +211,6 @@
     const RACES = ["Blood Elf", "Draenei", "Dwarf", "Gnome", "Human", "Night Elf", "Orc", "Tauren", "Troll", "Undead"];
     const CLASSES = ["Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior"];
     
-    const statsCache = new Map();  // Объект для локального кэширования запросов
-
     // Инициализация фильтров
     const raceSel = document.getElementById('raceSelect');
     const classSel = document.getElementById('classSelect');
